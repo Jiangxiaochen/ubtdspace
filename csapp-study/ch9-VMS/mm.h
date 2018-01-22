@@ -10,7 +10,7 @@
 
 #ifndef _MM_H_
 #define _MM_H_
-
+#include <sys/types.h>
 /**
  * 初始化分配器
  * @return  0，-1
