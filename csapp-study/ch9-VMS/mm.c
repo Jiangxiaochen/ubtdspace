@@ -11,7 +11,7 @@
 #define PUT(p, val)			(*(unsigned int *)(p) = (val))
 #define GET_SIZE(p)			(GET(p) & ~0x7)
 #define GET_ALLOC(p)		(GET(P) & 0x1)
-#define HDRP(BP)			((char *)(bp) - WSIZE)
+#define HDRP(bp)			((char *)(bp) - WSIZE)
 #define FTRP(bp)			((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
 #define NEXT_BLKP(bp)		((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
 #define PREV_BLKP(bp)		((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
@@ -49,8 +49,8 @@ static void *coalesce(void *bp){
 
 	if(!prev_alloc && !next_alloc){
 		size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(HDRP(NEXT_BLKP(bp)));
-		PUT(HDRP(PREV_BLKP(bp)), pack(size, 0));
-		PUT(FTRP(NEXT_BLKP(bp)), pack(size, 0));
+		PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+		PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
 		bp = PREV_BLKP(bp);
 	}
 	return bp;
@@ -83,14 +83,31 @@ int mm_init(void){
 	PUT(heap_listp + (3 * WSIZE), PACK(0, 1));
 
 	heap_listp += (2 * WSIZE);
-
+	printf("heap_listp: %p, size: %u\n", heap_listp, GET_SIZE(HDRP(heap_listp)));
 	if(extend_heap(CHUNKSIZE/WSIZE) == NULL) return -1;
+
 	return 0;
 }
 static void place(void *bp, size_t asize){
-
+	size_t left_size = GET_SIZE(HDRP(bp)) - asize;
+	if(left_size >= 16){
+		PUT(FTRP(bp), PACK(left_size, 0));
+		PUT(HDRP(bp), PACK(asize, 1));
+		PUT(FTRP(bp), PACK(asize, 1));
+		PUT(HDRP(NEXT_BLKP(bp)), PACK(left_size, 0));
+	}else{
+		PUT(HDRP(bp), PACK(left_size + asize, 1));
+		PUT(FTRP(bp), PACK(left_size + asize, 1));
+	}
 }
 static void *find_fit(size_t asize){
+	void *bp = heap_listp;
+	size_t size;
+	while((size = GET_SIZE(HDRP(bp))) != 0){
+		printf("find_fit: %p %lu\n", bp, size);
+		if(size >= asize) return bp;
+		bp = NEXT_BLKP(bp);
+	}
 	return NULL;
 }
 void *mm_malloc(size_t size){
@@ -100,6 +117,7 @@ void *mm_malloc(size_t size){
 	if(size == 0) return NULL;
 	if(size <= DSIZE) asize = 2 * DSIZE;
 	else asize = DSIZE * ((size + (DSIZE) + (DSIZE -1)) / DSIZE);
+	printf("mm_malloc-asize: %lu\n", asize);
 
 	if((bp = find_fit(asize)) != NULL){
 		place(bp, asize);
