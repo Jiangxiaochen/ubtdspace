@@ -18,14 +18,14 @@ int main(int argc, char const *argv[])
 	}
 
 	listenfd = Open_listenfd(argv[1]);
-
+	/**//////////////////////////
 	FD_ZERO(&read_set);
 	FD_SET(STDIN_FILENO, &read_set);
 	FD_SET(listenfd, &read_set);
 
 	while(1){
 		ready_set = read_set;
-		Select(listenfd+1, &read_set, NULL, NULL, NULL);
+		Select(listenfd+1, &ready_set, NULL, NULL, NULL);
 		if(FD_ISSET(STDIN_FILENO, &ready_set)){
 			command();
 		}
@@ -38,4 +38,10 @@ int main(int argc, char const *argv[])
 	}
 
 	return 0;
+}
+
+void command(void){
+	char buf[MAXLINE];
+	if(!Fgets(buf, MAXLINE, stdin)) exit(0);
+	printf("%s\n", buf);
 }
