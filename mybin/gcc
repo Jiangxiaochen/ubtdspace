@@ -1,0 +1,23 @@
+#echo "my name is `basename $0` I was called as $0"
+#echo "p1: $1"
+#echo "there is a $# params"
+
+#i=`expr index "$*" "-o"`
+s="-o "
+
+if [[ $* == *$s* ]]
+then
+l="-lpthread"
+fi
+
+str="$* /usr/include/csapp.c $l"
+len=`expr "${#str}" + 4`
+for (( i=1; i<=$len; i++ ))
+do
+    s1="$s1*"
+done
+echo "$s1*"
+echo "gcc $str*"
+echo "$s1*"
+/usr/bin/gcc $str
+

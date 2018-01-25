@@ -1,0 +1,742 @@
+    1  ifconfig
+    2  ps -ef | grep ssh
+    3  apt-get install openssh-server
+    4  su
+    5  su root
+    6  su root 
+    7  sudo passwd root
+    8  su root
+    9  reboot
+   10  gcc -v
+   11  make -v
+   12  which cc
+   13  ll /usr/bin/cc
+   14  cd /usr/bin/cc
+   15  cd /etc/alternatives/
+   16  ll
+   17  ll cc
+   18  cd /usr/bin/
+   19  ll cc
+   20  ll gcc
+   21  path
+   22  $PATH
+   23  echo $path
+   24  echo $PATH
+   25  su
+   26  ll
+   27  su root
+   28  ll
+   29  cd jxc-workspace/
+   30  ll
+   31  chmod 755 buildMyLib.sh 
+   32  ll
+   33  ./buildMyLib.sh 
+   34  ls *.c
+   35  ./buildMyLib.sh 
+   36  ll
+   37  ls *.c | vim
+   38  ls *.c
+   39  ./buildMyLib.sh 
+   40  ll
+   41  ./buildMyLib.sh 
+   42  gcc -c csapp.c
+   43  ll
+   44  ./buildMyLib.sh 
+   45  ll
+   46  rm csapp.o libMylib.a 
+   47  ll
+   48  rm .swp 
+   49  ll
+   50  ./buildMyLib.sh 
+   51  ll
+   52  ./buildMyLib.sh 
+   53  ll
+   54  vim buildMyLib.sh 
+   55  ./buildMyLib.sh 
+   56  echo hehe
+   57  gcc -c csapp.c
+   58  ./buildMyLib.sh 
+   59  vim buildMyLib.sh 
+   60  ./buildMyLib.sh 
+   61  rm buildMyLib.sh 
+   62  vim mylib.sh
+   63  chmod 755 mylib.sh 
+   64  ./mylib.sh 
+   65  vim mylib.sh
+   66  ./mylib.sh 
+   67  vim mylib.sh
+   68  ./mylib.sh 
+   69  ll
+   70  vim mylib.sh 
+   71  ./mylib.sh 
+   72  locate ll
+   73  which ll
+   74  whereis ll
+   75  vim mylib.sh 
+   76  ./mylib.sh 
+   77  vim mylib.sh 
+   78  ./mylib.sh 
+   79  ll
+   80  which gcc
+   81  echo $PATH
+   82  ll
+   83  vim mylib.sh 
+   84  ./mylib.sh 
+   85  ll
+   86  vim mylib.sh 
+   87  ./mylib.sh 
+   88  vim mylib.sh 
+   89  ./mylib.sh 
+   90  ll
+   91  chmod 777 buildMyLib.sh 
+   92  ./buildMyLib.sh 
+   93  ll
+   94  rm buildMyLib.sh 
+   95  vim buildMyLib.sh
+   96  mv csapp.o
+   97  rm csapp.o
+   98  ll
+   99  chmod 777 buildMyLib.sh 
+  100  ./buildMyLib.sh 
+  101  vim makefile
+  102  ll
+  103  mv buildMyLib.sh  csapp.o libMylib.a  
+  104  rm buildMyLib.sh csapp.o libMylib.a 
+  105  ll
+  106  gcc -c *.c
+  107  ll
+  108  rm csapp.o mylib.sh 
+  109  vim mylib.sh
+  110  ll
+  111  chmod 777 mylib.sh 
+  112  ./mylib.sh 
+  113  ll
+  114  vim mylib.sh 
+  115  ./mylib.sh 
+  116  ll
+  117  rm makefile
+  118  ll
+  119  vim mylib.sh 
+  120  ll
+  121  chmod 755 buildMyLib.sh 
+  122  ll
+  123  ./buildMyLib.sh 
+  124  vim buildMyLib.sh 
+  125  ll
+  126  ./buildMyLib.sh 
+  127  vim buildMyLib.sh 
+  128  ./buildMyLib.sh 
+  129  ll
+  130  rm buildMyLib.*
+  131  ll
+  132  vim mylib.sh 
+  133  ./mylib.sh 
+  134  vim testshparams.sh
+  135  chmod 777 testshparams.sh 
+  136  ./testshparams.sh 999 888
+  137  ll
+  138  cd jxc-workspace/
+  139  ll
+  140  cd csapp-study/
+  141  ll
+  142  cd ch7-linking/
+  143  ll
+  144  vim linkerror.c
+  145  gcc -Wall -0g -o linkerror linkerror.c 
+  146  gcc -Wall -Og -o linkerror linkerror.c 
+  147  vim linkerrorFix.c 
+  148  gcc -c linkerrorFix.c 
+  149  ll
+  150  gcc -Wall -Og -o linkerror linkerror.c linkerrorFix.o
+  151  ll
+  152  vim foo3.c
+  153  vim bar3.c
+  154  gcc -o foobar3 foo3.c bar3.c 
+  155  ./foobar3 
+  156  vim foo5.c
+  157  vim bar4.c
+  158  mv bar4.c bar5.c
+  159  ll
+  160  gcc -o  foobar5 foo5.c bar5.c 
+  161  ./foobar5
+  162  vim foo5.c 
+  163  vim bar5.c 
+  164  uname -a
+  165  vim foo5.c
+  166  gcc -o  foobar5 foo5.c bar5.c 
+  167  vim foo5.c
+  168  gcc -o  foobar5 foo5.c bar5.c 
+  169  vim foo5.c
+  170  gcc -o  foobar5 foo5.c bar5.c 
+  171  ./foobar5
+  172  vim foo5.c
+  173  gcc -o  foobar5 foo5.c bar5.c 
+  174  ./foobar5
+  175  ll
+  176  gcc -o foo5 foo5.c 
+  177  ./foo5
+  178  gcc -o foo5 foo5.c 
+  179  ./foo5
+  180  gcc -o foo5 foo5.c 
+  181  ./foo5
+  182  gcc -o  foobar5 foo5.c bar5.c 
+  183  ./foobar5
+  184  gcc -o  foobar5 foo5.c bar5.c 
+  185  ./foobar5
+  186  gcc -o  foobar5 foo5.c bar5.c 
+  187  ./foobar5
+  188  gcc -o  foobar5 foo5.c bar5.c 
+  189  ./foobar5
+  190  gcc -o  foobar5 foo5.c bar5.c 
+  191  ./foobar5
+  192  gcc -c addvec.c multvec.c 
+  193  ll
+  194  ar rcs libvector.a addvec.o multvec.o
+  195  ll
+  196  gcc -c main2.c 
+  197  clear
+  198  gcc -c main2.c 
+  199  gcc -o main2 main2.c
+  200  gcc -o main2 main2.c libvector.a 
+  201  ./main2
+  202  mv libvector.a libvector.a.hehe
+  203  ./main2
+  204  mv libvector.a.hehe libvector.a
+  205  ll
+  206  gcc -static-libgfortran libvector.a main2.c
+  207  gcc -o main.c
+  208  gcc -o main.o main.c
+  209  gcc -c main.o main.c
+  210  gcc -c main.c
+  211  objdump -dx main.o
+  212  ll
+  213  gcc -shared -fpic -o libvector.so addvec.c multvec.c
+  214  ll
+  215  ./main2
+  216  gcc -o main21 main2.c libvector.so
+  217  ll
+  218  ./main21 
+  219  gcc -o main21 main2.c ./libvector.so
+  220  ./main21
+  221  ll
+  222  mv libvector.so libvector.so1
+  223  ./main21
+  224  mv libvector.so1 libvector.so
+  225  ./main21
+  226  gcc -rdynamic -o main2r dll.c -ldl
+  227  ./main2r 
+  228  ll
+  229  cd interpose/
+  230  ll
+  231  gcc -DCOMPILETIME -c mymalloc.c 
+  232  ll
+  233  gcc -I. -o intc int.c mymalloc.o
+  234  ./intc 
+  235  gcc -c mymalloc.c
+  236  gcc -I. -o intc int.c mymalloc.o
+  237  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldl
+  238  gcc -o intr int.c 
+  239  LD_PRELOAD="./mymalloc.so" ./intr
+  240  LD_PRELOAD="./mymalloc.so"
+  241  ./intr
+  242  ll
+  243  LD_PRELOAD="./mymalloc.so" ./intr 
+  244  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldl
+  245  LD_PRELOAD="./mymalloc.so" ./intr 
+  246  ll
+  247  ulimit -a
+  248  ulimit -c unlimited
+  249  LD_PRELOAD="./mymalloc.so" ./intr 
+  250  ll
+  251  gdb ./intr core 
+  252  locate fileops.c
+  253  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldl
+  254  ll
+  255  gcc -o intr int.c
+  256  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldl
+  257  LD_PRELOAD="./mymalloc.so" ./intr 
+  258  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldlrm intr mymalloc.so 
+  259  ll
+  260  rm intr mymalloc.so 
+  261  ll
+  262  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldl
+  263  LD_PRELOAD="./mymalloc.so" ./intr 
+  264  gcc -o intr int.c 
+  265  LD_PRELOAD="./mymalloc.so" ./intr 
+  266  vim mymalloc.c 
+  267  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldl
+  268  LD_PRELOAD="./mymalloc.so" ./intr 
+  269  gcc -DRUNTIME -shared -fpic -o mymalloc.so mymalloc.c -ldl
+  270  LD_PRELOAD="./mymalloc.so" ./intr 
+  271  error
+  272  strings mymalloc.so 
+  273  nm mymalloc.so 
+  274  readelf
+  275  readelf -a  mymalloc.so 
+  276  cd ../../ch8-exception\ control\ flow/
+  277  ll
+  278  gcc -o main1 main1.c 
+  279  ./main1 
+  280  gcc -o main1 main1.c 
+  281  ./main1 
+  282  gcc -o main1 main1.c 
+  283  ./main1 
+  284  gcc -o main1 main1.c 
+  285  ./main1 
+  286  vim /proc/
+  287  cd /proc/
+  288  ll
+  289  cd 1/
+  290  ll
+  291  vim root 
+  292  su root
+  293  vim ~/jxc-workspace/mylib.sh 
+  294  ll
+  295  gcc -o wait wait.c -L~ -lMylib
+  296  gcc -o wait wait.c -L~/ -lMylib
+  297  gcc -o wait wait.c /home/linux/jxc-workspace/libMylib.a 
+  298  ll
+  299  gcc -o wait wait.c 
+  300  gcc -c wait.c 
+  301  ll
+  302  gcc -o wait wait.o 
+  303  gcc -c main.c
+  304  gcc -c wait.c
+  305  gcc -o wait.
+  306  gcc -o wait
+  307  gcc -o wait wait.o 
+  308  gcc -o wait wait.c 
+  309  rm wait.*
+  310  ll
+  311  gcc -o mywait mywait.c 
+  312  gcc -o mywait mywait.c -L~ -lMylib
+  313  gcc -o mywait mywait.c -L~/jxc-workspace/ -lMylib
+  314  gcc -o mywait mywait.c -L/home/linux/jxc-workspace/ -lMylib
+  315  clear
+  316  gcc -o mywait mywait.c -L/home/linux/jxc-workspace/ -lMylib
+  317  clear
+  318  ll
+  319  ./mywait 
+  320  clear
+  321  gcc -o mywait mywait.c -L/home/linux/jxc-workspace/ -lMylib
+  322  vim gcco.sh
+  323  chmod 777 gcco.sh 
+  324  ll
+  325  rm mywait
+  326  ./gcco.sh mywait
+  327  ll
+  328  ./mywait 
+  329  ./gcco.sh mywait
+  330  ./mywait 
+  331  ./gcco.sh mywait
+  332  ./mywait 
+  333  ./gcco.sh mywait
+  334  ./mywait 
+  335  ./gcco.sh waitprob0.c 
+  336  ./gcco.sh waitprob0
+  337  vim gcco.sh 
+  338  ./gcco.sh waitprob0
+  339  ./waitprob0 
+  340  ./gcco.sh waitpid1
+  341  ./waitpid1 
+  342  ./gcco.sh waitpid1
+  343  ./waitpid1 
+  344  ./gcco.sh waitpid1
+  345  ./waitpid1 
+  346  ./gcco.sh waitpid1
+  347  ./waitpid1 
+  348  ./gcco.sh waitpid1
+  349  ./waitpid1 
+  350  ./gcco.sh sleep.c 
+  351  ./gcco.sh sleep
+  352  clear
+  353  ./gcco.sh sleep
+  354  ./sleep 
+  355  ./gcco.sh sleep
+  356  ./sleep 
+  357  ./gcco.sh sleep
+  358  ./sleep 
+  359  ./gcco.sh sleep
+  360  ./sleep 
+  361  ./gcco.sh sleep
+  362  ./sleep 
+  363  ./gcco.sh sleep
+  364  ./sleep 
+  365  ./gcco.sh sleep
+  366  ./sleep 
+  367  cd jxc-workspace/
+  368  ll
+  369  pwd
+  370  cd csapp-study/ch8-exception\ control\ flow/
+  371  gcc -o test test.c 
+  372  gcc -o myecho myecho.c 
+  373  ./myecho jxc love xxt
+  374  gcc -o myecho myecho.c 
+  375  ./myecho jxc love xxt
+  376  gcc -o shellex shellex.c 
+  377  gcc -w -o shellex shellex.c 
+  378  ./shellex 
+  379  gcc -w -o kill kill.c 
+  380  ./kill
+  381  gcc -w -o sigint sigint.c 
+  382  ./sigint 
+  383  gcc -w -o snooze snooze.c 
+  384  gcc -o snooze snooze.c 
+  385  ./snooze 
+  386  gcc -o snooze snooze.c 
+  387  ./snooze 
+  388  ./snooze 5
+  389  gcc -o snooze snooze.c 
+  390  ./snooze 5
+  391  gcc -o snooze snooze.c 
+  392  ./snooze 5
+  393  gcc -o snooze snooze.c 
+  394  ./snooze 5
+  395  gcc -o signal1 signal1.c 
+  396  ./signal1 
+  397  gcc -o signal1 signal1.c 
+  398  ./signal1 
+  399  gcc -o signal1 signal1.c 
+  400  ./signal1 
+  401  gcc -o signal1 signal1.c 
+  402  ./signal1 
+  403  gcc -o signal1 signal1.c 
+  404  ./signal1 
+  405  ps t
+  406  gcc -o signal1 signal1.c 
+  407  ./signal1 
+  408  cd ~
+  409  cd jxc-workspace/
+  410  ll
+  411  vim mylib.sh 
+  412  gcc -o csapp.c
+  413  gcc -c csapp.c
+  414  ll
+  415  locate stdio.h
+  416  locate stdlib.h
+  417  cp csapp.h /usr/include/csapp.h
+  418  su 
+  419  cd csapp-study/ch8-exception\ control\ flow/
+  420  ll
+  421  gcc -o sigintsafe sigintsafe.c 
+  422  locate libpthread
+  423  gcc -o sigintsafe sigintsafe.c  -lpthread
+  424  which gcc
+  425  echo $PAHT
+  426  echo $PATH
+  427  vim ~/.bashrc 
+  428  source ~/.bashrc 
+  429  cd ~
+  430  cd jxc-workspace/
+  431  mkdir mybin
+  432  cd mybin/
+  433  ll
+  434  vim Gcc.sh
+  435  which gcc
+  436  which Gcc
+  437  chmod 777 Gcc.sh 
+  438  which Gcc
+  439  echo $PATH
+  440  pwd
+  441  Gcc
+  442  vim ~/.bashrc 
+  443  source ~/.bashrc 
+  444  echo $PATH
+  445  which Gcc
+  446  which Gcc.sh
+  447  Gcc 1
+  448  Gcc.sh 1
+  449  mv Gcc.sh Gcc
+  450  ll
+  451  which Gcc
+  452  vim Gcc 
+  453  Gcc -c
+  454  vim Gcc 
+  455  Gcc
+  456  Gcc -o 1.c 2.c -lmyutil
+  457  vim Gcc 
+  458  gcc a b
+  459  Gcc a b
+  460  vim Gcc 
+  461  Gcc a b
+  462  vim Gcc 
+  463  Gcc a b
+  464  vim Gcc 
+  465  Gcc a b
+  466  vim Gcc 
+  467  Gcc a b
+  468  vim Gcc 
+  469  Gcc a b
+  470  mv Gcc gcc
+  471  gcc a b
+  472  which gcc
+  473  gcc a
+  474  gcc -c
+  475  gcc
+  476  gcc -v
+  477  vim ~/.bashrc 
+  478  source ~/.bashrc 
+  479  echo $PATH
+  480  gcc
+  481  vim gcc 
+  482  mv gcc gcc1
+  483  which gcc
+  484  vim gcc1 
+  485  mv gcc1 gcc
+  486  gcc -v
+  487  vim gcc
+  488  vim testsh
+  489  vim testsh.sh
+  490  chmod 755 testsh.sh 
+  491  ./testsh.sh 
+  492  vim testsh.sh 
+  493  ./testsh.sh 
+  494  vim testsh.sh 
+  495  ./testsh.sh 
+  496  vim testsh.sh 
+  497  ./testsh.sh 
+  498  vim testsh.sh 
+  499  ./testsh.sh 
+  500  vim testsh.sh 
+  501  ./testsh.sh 
+  502  vim testsh.sh 
+  503  ./testsh.sh 
+  504  vim testsh.sh 
+  505  ./testsh.sh 
+  506  vim testsh.sh 
+  507  ./testsh.sh 
+  508  vim testsh.sh 
+  509  ./testsh.sh 
+  510  ./testsh.sh a a a
+  511  vim testsh.sh 
+  512  ./testsh.sh a a a
+  513  vim testsh.sh 
+  514  ./testsh.sh a a a
+  515  vim testsh.sh 
+  516  ./testsh.sh a a a
+  517  vim testsh.sh 
+  518  ./testsh.sh a a a b
+  519  vim testsh.sh 
+  520  ./testsh.sh a a a 
+  521  vim gcc 
+  522  gcc a
+  523  vim gcc 
+  524  gcc a
+  525  vim gcc 
+  526  gcc abc
+  527  vim gcc 
+  528  gcc abc
+  529  vim gcc 
+  530  mv gcc gcc.sh
+  531  vim gcc.sh 
+  532  gcc.sh -v
+  533  mv gcc.sh gcc
+  534  gcc -v
+  535  vim gcc
+  536  type -a gcc
+  537  cd jxc-workspace/
+  538  ll
+  539  mv testshparams.sh mybin/testshparams.sh
+  540  ll
+  541  cd mybin/
+  542  ll
+  543  vim testsh.sh 
+  544  ./testsh.sh 
+  545  vim testsh.sh 
+  546  ./testsh.sh 
+  547  vim testsh.sh 
+  548  ./testsh.sh 
+  549  vim testsh.sh 
+  550  ./testsh.sh 
+  551  vim testsh.sh 
+  552  ./testsh.sh 
+  553  vim testsh.sh 
+  554  ./testsh.sh 
+  555  vim testsh.sh 
+  556  vim str.sh
+  557  chmod 777 str.sh 
+  558  ./str.sh 
+  559  vim str.sh
+  560  ./str.sh 
+  561  vim str.sh
+  562  ./str.sh 
+  563  :q
+  564  vim str.sh
+  565  ./str.sh 
+  566  vim str.sh
+  567  ./str.sh 
+  568  vim str.sh
+  569  ./str.sh 
+  570  vim str.sh
+  571  ./str.sh 
+  572  vim str.sh
+  573  ./str.sh 
+  574  printf hello
+  575  printf hello\n
+  576  printf "hello\n"
+  577  echo hello
+  578  printf "%d %s %c\n" 1 2 3
+  579  printf "%d-%s-%c\n" 1 2 3
+  580  vim testflowcontrol.sh
+  581  chmod 777 testflowcontrol.sh 
+  582  ./testflowcontrol.sh 
+  583  vim testflowcontrol.sh
+  584  ./testflowcontrol.sh 
+  585  vim testflowcontrol.sh
+  586  ./testflowcontrol.sh 
+  587  vim testflowcontrol.sh
+  588  ./testflowcontrol.sh 
+  589  vim testflowcontrol.sh
+  590  locate .vimrc
+  591  cd ~
+  592  ls .vim*
+  593  vim .viminfo 
+  594  cd .vim/
+  595  ll
+  596  vim .netrwhist 
+  597  cd ..
+  598  cd /
+  599  ll .vim*
+  600  vim .vimrc
+  601  cd ~
+  602  vim .vimrc
+  603  source .vimrc 
+  604  vim .vimrc 
+  605  source .vimrc
+  606  cd jxc-workspace/mybin/
+  607  ll
+  608  vim testflowcontrol.sh 
+  609  ./testflowcontrol.sh 
+  610  vim testflowcontrol.sh 
+  611  vim ~/.vimrc 
+  612  vim testflowcontrol.sh 
+  613  vim ~/.vimrc
+  614  rm -f ~/.vimrc 
+  615  vim ~/.vimrc
+  616  vim testflowcontrol.sh 
+  617  ./testflowcontrol.sh 
+  618  which ctags
+  619  vim testflowcontrol.sh 
+  620  ./testflowcontrol.sh 
+  621  vim testflowcontrol.sh 
+  622  ./testflowcontrol.sh 
+  623  vim testflowcontrol.sh 
+  624  ./testflowcontrol.sh 
+  625  vim testflowcontrol.sh 
+  626  ./testflowcontrol.sh 
+  627  vim testflowcontrol.sh 
+  628  vim ~/.vimrc 
+  629  vim testflowcontrol.sh 
+  630  vim ~/.vimrc 
+  631  who > users
+  632  vim users 
+  633  ll
+  634  vim gcc 
+  635  gcc -v
+  636  ll
+  637  cat users 
+  638  aaa > users
+  639  echo aaa >> users
+  640  cat users 
+  641  vim users 
+  642  echo aaa >> users
+  643  cat users 
+  644  wc
+  645  wc -v
+  646  wc --help
+  647  wc -l users 
+  648  wc -l < users
+  649  wc -l < users > haha
+  650  cat haah
+  651  cat haha 
+  652  ll
+  653  ll ^d
+  654  ll ^d*
+  655  ll [^d]*
+  656  ll d*
+  657  ll | grep d*
+  658  ps -af | grep ssh
+  659  ps -af
+  660  ps
+  661  ps -a
+  662  ps -f
+  663  ps -af
+  664  su root
+  665  echo $PATH
+  666  source ~/.profile 
+  667  echo $PATH
+  668  cd ..
+  669  ll
+  670  cd mybin/
+  671  ll
+  672  ls
+  673  mv `ls | grep -v '^gcc' | grep -v '^hehe'` hehe/
+  674  ll
+  675  su root
+  676  vim /home/linux/.profile 
+  677  echo $PATH
+  678  vim /home/linux/.profile 
+  679  vim /home/linux/.bash_rc
+  680  vim /home/linux/.bashrc
+  681  echo $PATH
+  682  who
+  683  who | grep betsy
+  684  who | grep linux
+  685  su root
+  686  echo $PATH
+  687  vim ~/.bashrc 
+  688  locate .profile
+  689  su root
+  690  su root
+  691  echo $PATH
+  692  cd jxc-workspace/shell-study/
+  693  cat > finduser
+  694  ll
+  695  cd ..
+  696  ll
+  697  su root
+  698  cat > finduser
+  699  chmod +x finduser 
+  700  ./finduser linux
+  701  echo $PATH
+  702  vim ~/.profile 
+  703  echo `date`
+  704  tzselect
+  705  echo `date`
+  706  timezone
+  707  tzselect
+  708  echo `time`
+  709  echo `date`
+  710  shutdown -h
+  711  shutdown --help
+  712  su root
+  713  date
+  714  cat /etc/timezone 
+  715  cat > /etc/timezone
+  716  su root
+  717  123
+  718  locate .profile
+  719  vim /home/linux/.profile 
+  720  source /home/linux/.profile 
+  721  date
+  722  echo $PATH
+  723  vim /home/linux/.profile 
+  724  su root
+  725  vim log.profile 
+  726  rm log.profile 
+  727  vim .profile 
+  728  echo $PATH
+  729  shutdown -r now
+  730  reboot 
+  731  cq
+  732  cat cq
+  733  cat > cq
+  734  cq
+  735  chmod +x cq 
+  736  ./cq 
+  737  vim cq 
+  738  ./cq
+  739  vim cq 
+  740  ./cq
+  741  history > history 
+  742  history > history1
