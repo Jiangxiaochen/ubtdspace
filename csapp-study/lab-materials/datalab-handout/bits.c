@@ -1,6 +1,10 @@
 /* 
  * CS:APP Data Lab 
  * 
+<<<<<<< HEAD
+=======
+ * <xiaochen.jiang 123>
+>>>>>>> 5bd7253d843299f7ca76eaf1f80b81b2c6969eb8
  * <Please put your name and userid here>
  * 
  * bits.c - Source file with your solutions to the Lab.
