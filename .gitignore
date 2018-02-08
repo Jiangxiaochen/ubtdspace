@@ -1,0 +1,12 @@
+*
+!.git*
+!*.c
+!*.h
+!*.txt
+!*.bat
+!*.md
+!*.sh
+!*.cpp
+!*/
+!*.s
+lab-materials/

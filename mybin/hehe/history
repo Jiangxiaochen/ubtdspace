@@ -1,0 +1,211 @@
+    1  apt-get install openssh-server
+    2  apt install openssh-server
+    3  apt
+    4  ll
+    5  cd ~
+    6  ll
+    7  apt-get install openssh-server
+    8  systemctl stop apt-daily.service
+    9  systemctl stop apt-daily.timer
+   10  apt-get install openssh-server
+   11  ps -ef | grep ssh
+   12  cd /home/
+   13  ll
+   14  cd /root
+   15  ll
+   16  su linux
+   17  cd ~
+   18  ll
+   19  ls
+   20  mkdir MyWorkspace
+   21  cd MyWorkspace/
+   22  vim root
+   23  vim syscall 
+   24  cd ../cpuinfo 
+   25  cd ..
+   26  ll
+   27  ls -f
+   28  ll -f
+   29  ll
+   30  ls -F
+   31  ls
+   32  ll
+   33  ll | grep ~'/$'
+   34  ls -F | grep '/$'
+   35  ls -F | grep '!/$'
+   36  ls -F | grep '!(/$)'
+   37  ls
+   38  ll
+   39  ll | grep '^d'
+   40  ll | grep '^[^d]'
+   41  ls -l |grep "^d[d]"
+   42  ll | grep '^-'
+   43  ll | grep '^-' > a.txt
+   44  ll | grep '^-' | > a.txt
+   45  (ll | grep '^-') > a
+   46  vim a.txt
+   47  ll
+   48  vim a.txt
+   49  cd ..
+   50  ll /proc/
+   51  ls proc/
+   52  ll | grep proc
+   53  cd proc/
+   54  ll | grep '^-' > ~/procfile.txt
+   55  vim ~/procfile.txt 
+   56  cd ~linux/
+   57  ll
+   58  cd jxc-workspace/csapp-study/ch8-exception\ control\ flow/
+   59  ll
+   60  gcc -o main2 main2.c 
+   61  clear
+   62  gcc -o main2 main2.c 
+   63  ./main2
+   64  gcc -o main2 main2.c 
+   65  ./main2
+   66  gcc -o main2 main2.c 
+   67  ./main2
+   68  gcc -o fork fork.c 
+   69  ./fork 
+   70  gcc -o fork fork.c 
+   71  ./fork 
+   72  gcc -o fork fork.c 
+   73  ./fork 
+   74  gcc -o fork fork.c 
+   75  ./fork 
+   76  gcc -o fork fork.c 
+   77  ./fork 
+   78  gcc -o fork fork.c 
+   79  ./fork 
+   80  gcc -o fork fork.c 
+   81  ./fork 
+   82  gcc -o fork fork.c 
+   83  ./fork 
+   84  gcc -o fork fork.c 
+   85  clear
+   86  gcc -o fork fork.c 
+   87  ./fork 
+   88  gcc -help
+   89  gcc -h
+   90  help gcc
+   91  info gcc
+   92  su linux
+   93  cp csapp.h /usr/include/csapp.h
+   94  locate stdio.c
+   95  cp csapp.c /usr/include/csapp.c
+   96  vim /usr/include/csapp.h
+   97  su linux
+   98  mv `ls | grep -v '^gcc' | grep -v '^hehe'` hehe/
+   99  ll
+  100  ll hehe/
+  101  chgrp -f hehe/ linux
+  102  chgrp linux -f hehe/
+  103  ll
+  104  chown linux hehe/
+  105  ll
+  106  ll hehe/
+  107  cd hehe/
+  108  ll
+  109  chown --help
+  110  vim /home/linux/.profile 
+  111  vim /home/linux/.bashrc 
+  112  vim /home/linux/.profile 
+  113  source /home/linux/.profile 
+  114  echo $PATH
+  115  su linux
+  116  who
+  117  su linux
+  118  locate .profile
+  119  su linux
+  120  jxc
+  121  echo $PATH
+  122  su linux
+  123  ps -af
+  124  locate vim*
+  125  locate vim
+  126  locate vim.*
+  127  locate vim %
+  128  ll [^d]%
+  129  ll test%
+  130  locate vim%
+  131  vim 
+  132  vim
+  133  vim 
+  134  vim ~/.bash_history 
+  135  histor
+  136  history
+  137  ll gcc %
+  138  ll test %
+  139  history > history
+  140  vim history 
+  141  ll
+  142  mv '^gcc' /hehe
+  143  mkdir hehe
+  144  mv str.sh hehe/
+  145  ll hehe/
+  146  ll
+  147  ll | grep -v hehe gcc | mv hehe/
+  148  ll | grep -v hehe gcc
+  149  ll | grep -v (gcc hehe)
+  150  ll | grep "[^(gcc)]"
+  151  ll | grep '^-'
+  152  ll | grep '^-r'
+  153  ll | grep '^drw'
+  154  ll | grep '^drwxrwx'
+  155  ll 
+  156  who
+  157  cd ..
+  158  ll
+  159  mkdir shell-study
+  160  cd shell-study/
+  161  cat nusers
+  162  cat > nusers
+  163  chmod +x nusers 
+  164  ./nusers 
+  165  cat >> nusers
+  166  python
+  167  ll /bin/
+  168  which bash
+  169  ll /bin | grep 'sh$'
+  170  ll /bin | grep sh
+  171  which python
+  172  vim 1.py
+  173  chmod +x 1.py 
+  174  ./1.py 
+  175  python 1.py 
+  176  vim 1.py 
+  177  ./1.py 
+  178  cat
+  179  tr --help
+  180  ll
+  181  cat dos-file.txt
+  182  cat > dos-file.txt
+  183  tr -d 'hb' < dos-file.txt | sort > unix-file.txt
+  184  cat unix-file.txt 
+  185  who
+  186  su linux
+  187  chown -r linux shell-study/
+  188  chown -R linux shell-study/
+  189  chgrp -R linux shell-study/
+  190  ll
+  191  cd shell-study/
+  192  ll
+  193  su linux
+  194  shutdown -r now
+  195  shutdown -r
+  196  shutdown -r now
+  197  su root
+  198  cat > /etc/timezone 
+  199  cat /etc/timezone 
+  200  date
+  201  vim /etc/localtime 
+  202  su linux
+  203  which cq
+  204  whereis cq
+  205  where cq
+  206  locate cq
+  207  locate cq | grep '^cq$'
+  208  locate cq | grep '^cq'
+  209  updatedb
+  210  locate cq | grep '^cq'
+  211  history > history 
