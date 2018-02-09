@@ -16,3 +16,13 @@ switcher:
 	xorq	$15,%rsi		//b^=15
 	movq	%rsi,%rdx		//c=b
 .
+
+void switcher(long a, long b, long c, long *dest)
+{
+	long val;
+	switch(a)
+	{
+		case 0:
+			
+	}
+}
