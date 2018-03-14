@@ -1,4 +1,4 @@
-movb $0xF, (%ebx) # 地址错误
+movb $0xF, (%bl) # 地址错误
 movl %rax, (%rsp) # expect movq
 movw (%rax), 4(%rsp) # mem->mem is not allowed
 movb %al, %sl # register name not correct
