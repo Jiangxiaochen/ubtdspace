@@ -30,7 +30,7 @@ int main(int argc, char const *argv[])
 {
 	int n;
 	char buf[255];
-	if(signal(SIGCHLD, handler2) == SIG_ERR) printf("signal error\n");
+	if(signal(SIGCHLD, handler1) == SIG_ERR) printf("signal error\n");
 	for (int i = 0; i < 3; ++i)
 	{
 		if(fork() == 0){

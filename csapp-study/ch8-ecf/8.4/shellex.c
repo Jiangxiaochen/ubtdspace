@@ -20,23 +20,23 @@ int main(){
 }
 
 void eval(char *cmdline){
-	char *argv[MAXARGS];
-	char buf[MAXLINE];
-	int bg;
-	pid_t pid;
+	char *argv[MAXARGS];	//argument list execve
+	char buf[MAXLINE];	//holds modified command line
+	int bg;			//should the job run in bg or fg
+	pid_t pid;		//process id
 
 	strcpy(buf,cmdline);
 	bg = parseline(buf, argv);
-	if(argv[0] == NULL) return;
+	if(argv[0] == NULL) return;	//ignore empty lines
 
-	if(!buildin_command(argv)){
-		if((pid = fork()) == 0){
+	if(!buildin_command(argv)){	
+		if((pid = fork()) == 0){	// child runs user job
 			if(execve(argv[0], argv) < 0){
 				printf("%s: Command not found.\n", argv[0]);
 				exit(0);
 			}
 		}
-
+		//parent waits for foreground job to terminate
 		if(!bg){
 			int status;
 			if(waitpid(pid, &status, 0) < 0){
@@ -57,13 +57,13 @@ int buildin_command(char **argv){
 }
 
 int parseline(char *buf, char **argv){
-	char *delim;
-	int argc;
-	int bg;
+	char *delim;				//points to first space delimiter
+	int argc;				//number of args
+	int bg;					//background job?
 
-	buf[strlen(buf)-1] = ' ';
-	while(*buf && (*buf == ' ')) buf++;
-
+	buf[strlen(buf)-1] = ' ';		//replace trailing \n with space
+	while(*buf && (*buf == ' ')) buf++;	//ignore leading spaces
+	//build argv list
 	argc = 0;
 	while((delim = strchr(buf,' '))){
 		argv[argc++] = buf;
