@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+/*
 int main(int argc, char **argv)
 {
 	int len = atoi(argv[1]);
@@ -9,4 +9,11 @@ int main(int argc, char **argv)
 		fputs(buf,stdout);
 		fputs("--",stdout);
 	}
+}
+*/
+
+int main()
+{
+	printf("hello");
+	return 0;
 }
