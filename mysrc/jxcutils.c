@@ -38,3 +38,30 @@ int show_endian()
 	return -1;
 }
 
+void show_bits(void *start, unsigned len)
+{
+	unsigned char *start1 = (unsigned char *)start;
+	unsigned char mask = 1 << 7;
+	
+	char tmp;
+	for(int i = 0; i < len; i++){
+		tmp = *(start1 + i);
+		for(int j = 0; j < 8; j++){
+			if((mask & tmp) == 0){
+				putchar('0');
+			}else{
+				putchar('1');
+			}
+			tmp <<= 1;
+		}
+		putchar(' ');
+	}
+	putchar('\n');
+}
+
+
+
+
+
+
+

@@ -1,7 +1,9 @@
 #ifndef _JXC_UTILS_H_
 #define _JXC_UTILS_H_
 
+#include <ctype.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,4 +21,5 @@ void show_line();
 #define small_endian	1
 int show_endian();
 
+void show_bits(void *start, unsigned len);
 #endif
