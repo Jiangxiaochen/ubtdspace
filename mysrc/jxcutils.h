@@ -1,6 +1,7 @@
 #ifndef _JXC_UTILS_H_
 #define _JXC_UTILS_H_
 
+#include <setjmp.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -11,6 +12,10 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <time.h>
+#include <math.h>
+#include <assert.h>
+#include <errno.h>
+#include <limits.h>
 
 void show_bytes(void *start, unsigned len);
 
