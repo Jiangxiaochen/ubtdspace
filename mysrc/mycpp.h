@@ -12,6 +12,7 @@
 //关联容器
 #include <set>
 #include <map>
+#include <utility>
 //multiset,multimap
 //无序关联容器
 #include <unordered_set>
@@ -31,7 +32,7 @@ using namespace std;
 #define VIEW_SEQ(sq) \
 {\
 	cout << "----start of " << #sq << "----" << endl;\
-	for(auto e : sq) cout << e << " "; cout << endl;\
+	for(const auto &e : sq) cout << e << " "; cout << endl;\
 	cout << "----end of " << #sq << "----" << endl;\
 }
 
@@ -39,3 +40,15 @@ using namespace std;
 {\
 	cout << #sq " size: " << sq.size() << " capacity: " << sq.capacity() << endl;\
 }
+
+#define VIEW_MAP(sq) \
+{\
+	cout << "----start of " << #sq << "----" << endl;\
+	for(const auto &e : sq) cout << "[" << e.first,\
+	cout << "," << e.second << "]",\
+	cout << endl;\
+	cout << "----end of " << #sq << "----" << endl;\
+}
+
+
+
