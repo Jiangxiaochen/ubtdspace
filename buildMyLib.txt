@@ -1,4 +1,0 @@
-# gcc -w -c *.c
-# ar rcs libMylib.a *.o
-ls 
-gcc -c csapp.c

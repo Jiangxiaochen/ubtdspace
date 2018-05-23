@@ -2,7 +2,7 @@
 
 void *thread(void *vargp);
 
-volatile long cnt = 0;
+long cnt = 0;
 
 int main(int argc, char const *argv[])
 {
