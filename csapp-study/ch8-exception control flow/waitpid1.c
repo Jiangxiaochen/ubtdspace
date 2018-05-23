@@ -1,35 +1,34 @@
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include "/home/linux/jxc-workspace/csapp.h"
+#include "csapp.h"
 
-#define N 2
+volatile sig_atomic_t pid;
 
-int main(){
-	int status, i;
-	pid_t pid[N],retpid;
-	for(i = 0; i < N; i++){
-		if((pid[i] = Fork()) == 0) exit(100+i);
+void sigchld_handler(int s)
+{
+	int olderrno = errno;
+	pid = waitpid(-1, NULL, 0);
+	errno = olderrno;
+}
+
+void sigint_handler(int s)
+{
+
+}
+
+int main(int argc, char const *argv[])
+{
+	sigset_t mask,prev;
+	Signal(SIGCHLD, sigchld_handler);
+	Sigemptyset(&mask);
+	Sigaddset(&mask,SIGCHLD);
+
+	while(1)
+	{
+		Sigprocmask(SIG_BLOCK,&mask,&prev);
+		if(Fork() == 0) exit(0);
+		pid = 0;
+		Sigprocmask(SIG_SETMASK,&prev,NULL);
+		while(!pid);
+		printf(".");
 	}
-
-	printf("pid: %d %d\n", pid[0], pid[1]);
-	i = 0;
-	while((retpid = waitpid(pid[i++], &status, 0)) > 0){
-		printf("%d\n", i);
-		if(WIFEXITED(status)){
-			printf("child %d terminated normallly with exit\
-				 status = %d\n", pid, WEXITSTATUS(status));
-		}
-		else{
-			printf("child %d terminated abnormally\n", retpid);
-		}
-	}
-
-	if(errno != ECHILD){
-		unix_error("waitpid error");
-	}
-
-	exit(0);
+	return 0;
 }

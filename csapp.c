@@ -1068,6 +1068,17 @@ int Open_listenfd(char *port)
     return rc;
 }
 
+void show_bytes(byte_pointer bp, size_t len)
+{
+    printf("0x");
+    for (size_t i = len - 1; i >= 0; --i)
+    {
+        printf("%.2x", *(bp+i));
+        if (i == 0) break;
+    }
+    printf("\n");
+}
+
 /* $end csapp.c */
 
 

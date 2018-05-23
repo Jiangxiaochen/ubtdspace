@@ -1,5 +1,5 @@
-typedef char src_t;
-typedef short dest_t;
+typedef int src_t;
+typedef char dest_t;
 
 void foo(src_t *sp, dest_t *dp)
 {

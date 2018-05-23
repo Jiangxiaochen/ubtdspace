@@ -17,15 +17,20 @@ long fun_b(unsigned long x)
 	long i;
 	for(i = 64; i != 0; i--)
 	{
-		long tmp = x & 1;
-		val = val + val;
-		val = val | tmp;
-		
+		// long tmp = x & 1;
+		// val = val + val;
+		// val = val | tmp;
+		val = (val << 1) | (x & 1);
 		x >>= 1;
 	}
 	return val;
 }
 
-/*
+#include "stdio.h"
 
- */
+int main(int argc, char const *argv[])
+{
+	unsigned long x = 0xf1;
+	printf("%lx %lu\n", x, fun_b(x));
+	return 0;
+}
