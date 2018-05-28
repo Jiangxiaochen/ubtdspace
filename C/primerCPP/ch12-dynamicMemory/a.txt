@@ -1,0 +1,1333 @@
+---[[
+--	聊天控制器
+
+---]]
+ChatCtrl = ChatCtrl or {}
+local ChatCtrl = ChatCtrl
+
+local tonumber = tonumber
+local WorldPacket = WorldPacket
+local errorCodes = errorCodes
+
+local EquipBaseDao = EquipBaseDao
+local ChPackageService = ChPackageService
+local CharacterService = CharacterService
+local ServerCall = ServerCall
+local DbLogService = DbLogService
+local ConsumeGoldDefs = ConsumeGoldDefs
+local GameObjectService = GameObjectService
+local ChRebornService = ChRebornService
+
+do
+	function ChatCtrl:b2m_chat_near( gcid,data,lplr )
+		local aoi_scene = GameObjectService:getAoiSceneAndObject(lplr)
+		for k,v in pairs(aoi_scene.aoi_objs) do
+			if v.gpid then
+				WorldPacket:m2cSendOK(data,0,v.gpid)
+			end
+		end
+	end
+
+end
+
+
+do
+	function ChatCtrl:b2m_doGmCmd(gcid,data,lplr)
+
+		assert(lplr,'gcid=' .. gcid)
+		local db = lplr.db
+		local aoi_obj = lplr.aoi_obj
+		local aoi_scene = GameObjectService:getAoiSceneAndObject(lplr)
+
+		local cmds = data.cmds
+		local cmd = cmds[1]
+		if not cmd then
+			WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'GM COMMAND IS NULL' )
+			return
+		end
+
+		if cmd == 'weekact_addmyscore' then --周活动加积分:weekact_addmyscore 积分
+			local add_score = tonumber(cmds[2])
+			if add_score > 0 then
+				WeekActivityService:addScore(lplr, WeekActivityBaseDao.cur_info.act_id, add_score)
+			end
+			return
+		end
+
+		if cmd == 'xo_result' then
+			if  not XOAnswerDao.xo_answer then
+				WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'找不到XO答题信息' )
+				return
+			end
+
+			local tips_txt = table.concat(XOAnswerDao.xo_answer.right_answers,',')
+			ChatService:sendString( lplr.gpid, '答案：'..tips_txt)
+			return
+		end
+
+		if cmd == 'drop' then	--添加掉落物:drop 道具id
+			local equip_id = tonumber(cmds[2])
+			local x,y = aoi_scene:roundPos(aoi_obj.x,aoi_obj.y,2)
+			ObjectItemService:dropEquip(aoi_scene,x,y,EquipBaseDao[equip_id],1)
+			return
+		end
+
+		if cmd == 'event_task' then --周活动任务:event_task 任务id
+			local task_id = tonumber(cmds[2])
+			SceneEventService:onDeliverTask(lplr, task_id)
+			return
+		end
+
+		if cmd == 'pass_cheese' then --奶酪通关
+			CheeseService:fightOver(aoi_scene,3,1)
+			return
+		end
+
+
+		if cmd == "add_bubble" then --添加气泡:add_bubble 气泡id
+			local bubble_id = tonumber(cmds[2])
+			BubbleService:unLockBubble( lplr,bubble_id )
+			return
+		end
+
+
+		if cmd == 'promptAdd' then --通用红点测试:promptAdd 类型id
+			local sort_id = tonumber(cmds[2])
+			PromptService:promptAdd(lplr,sort_id)
+			return
+		end
+
+
+		if cmd == 'npc_book' then--开启某个NPC好感:npc_book npc_id
+			local npc_id = tonumber(cmds[2])
+			NpcService:newNpcBook(lplr,npc_id)
+			return
+		end
+
+
+		if cmd == 'del_npc_book' then--关闭某个NPC好感:del_npc_book npc_id
+			local npc_id = tonumber(cmds[2])
+			local npc_books = NpcService:getNpcBooks(lplr)
+			local books = npc_books.books
+			local book = books[npc_id]
+			if book then
+				if book.task_id and book.task_id > 0 then
+					books.curr_task_id = 0
+				end
+				books[npc_id] = nil
+				CharacterService:key2dirty(lplr,'npc_books')
+				NpcService:sendNpcBooks(lplr)
+			end
+			return
+		end
+
+
+		if cmd == 'reset_gift_cnt' then --重置NPC送礼次数:reset_gift_cnt
+			local npc_books = NpcService:getNpcBooks(lplr)
+			npc_books.total_gift_cnt = 0
+			CharacterService:key2dirty(lplr,'npc_books')
+			return
+		end
+
+
+		if cmd == 'add_favor' then--增加NPC好感:add_favor npc_id 好感度
+			local npc_id,favor = tonumber(cmds[2]),tonumber(cmds[3])
+			NpcService:addFavor(lplr,npc_id,favor)
+			return
+		end
+
+
+		if cmd == 'promptDel' then --红点删除:promptDel 类型id
+			local sort_id = tonumber(cmds[2])
+			PromptService:promptDel(lplr,sort_id)
+			return
+		end
+
+		if cmd == 'truckhp' then --设置商车血量:truckhp [血量]
+			local now_hp = tonumber(cmds[2]) or 0
+			if now_hp <=0 then
+				now_hp = 1
+			end
+
+			local parent_aoi_obj = aoi_obj.parent_aoi_obj
+			if not parent_aoi_obj then
+				local monsters, num = aoi_scene:getFov(aoi_obj, AoiObjectType.AOI_OBJECT_TYPE_ID_MONSTER )
+				for i=1,num do
+					local monster = monsters[i].game_obj
+					--print(monster.nick, rawget(monster,'guild_id'),lplr.db.guild_id)
+					if rawget(monster,'guild_id') == lplr.db.guild_id then
+						parent_aoi_obj = monsters[i]
+						break
+					end
+				end
+				if not parent_aoi_obj then
+					return WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'没有找到商车' )
+				end
+			end
+
+			local game_obj = parent_aoi_obj.game_obj
+			if not game_obj or game_obj.now_hp <= 0 then
+				return WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'商车已死' )
+			end
+			game_obj.now_hp = now_hp
+			game_obj.cane_num = 0
+			GameObjectService:sendAppearDataUpdate(aoi_scene, game_obj, {hp=now_hp,cane_num=game_obj.cane_num})
+			return
+		end
+
+		if cmd == 'truckspeed' then --设置商车速度:truckspeed [speed]
+			local speed = tonumber(cmds[2]) or 10
+			local parent_aoi_obj = aoi_obj.parent_aoi_obj
+			if not parent_aoi_obj then
+				return WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'不是司机' )
+			end
+			local game_obj = parent_aoi_obj.game_obj
+			if not game_obj or game_obj.now_hp <= 0 then
+				return WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'商车已死' )
+			end
+			game_obj.speed = speed
+			MotionService:changeSpeed( game_obj, 1, Time.time_now + 3600000 )
+
+			return
+		end
+
+		if cmd == 'addpetmaxhp' then --侠客加血1.5倍:addpetmaxhp
+			local follow_pets = lplr.tmps_ex.follow_pets
+			if follow_pets then
+				local updates = {}
+				for pet_id, pet in pairs(follow_pets) do
+					updates.max_hp = pet.max_hp * 1.5
+					ChPetService:updateChPet(lplr, pet_id, updates)
+				end
+			end
+			return
+		end
+
+		if cmd == 'robot' then --克隆一个机器人:robot
+			local game_obj = Robot:new(db.nick, lplr.gcid, db, {max_hp=1}, 0)
+			local xaoi_obj = AoiObj:new(game_obj, aoi_scene, aoi_obj.x+2, aoi_obj.y+2, aoi_obj.direction)
+			aoi_scene:addObj(xaoi_obj)
+			return
+		end
+
+		if cmd == 'reset_juqing' then--重置剧情:reset_juqing
+			aoi_scene.scenario_data = false
+			return
+		end
+
+
+		if cmd == 'add_bonfire' then--增加一个篝火:add_bonfire
+			BonfireCtrl:addTestBonfire(lplr)
+			return
+		end
+
+		if cmd == 'add_monster' then--添加一个怪物:add_monster 怪物id [ai_id]
+			local monster_id,ai_id = tonumber(cmds[2]),tonumber(cmds[3] or 0)
+			local monster_base = MonsterBaseDao[monster_id]
+			--monster_base.max_hp = 1000
+			if ai_id > 0 then
+				monster_base.ai_ids = {ai_id}
+			end
+			local x,y = aoi_scene:roundPos(lplr.aoi_obj.x, lplr.aoi_obj.y,3)
+			if monster_base.trap_params then
+				aiApi.do_callMonster(aoi_scene, monster_id, x, y)
+			else
+				monster_base.is_idle_homing = 0
+		
+				if monster_base.monster_sort_id == MonsterDefs.SORT_ID_TRUCK then
+					local data =
+					{
+						guild_id = lplr.db.guild_id,
+						monster_id = monster_id,
+					}
+					GuildTruckCtrl:b2m_createTruck(gcid,data,lplr)
+				elseif monster_base.monster_sort_id ==  MonsterDefs.SORT_ID_TREASURE then
+					TreasureMonsterService:addTrarsureMonster(aoi_scene,x,y,monster_id)
+				else
+					local game_obj = Monster:new(aoi_scene,monster_base)
+					-- game_obj.patro_ways = { {x+3,y+3},{x+8,y+3},{x+11,y},{x+8,y-3}}
+					local aoi_obj = AoiObj:new(game_obj, aoi_scene, x,y)
+					aoi_scene:addObj(aoi_obj)
+				end
+			end
+			return
+		end
+
+		if cmd == 'account' then--查看账号信息:account
+			local info =
+			{
+				'player_id=' .. db.player_id,
+				'id=' .. db.id,
+				'nick=' .. db.nick,
+				'scene_id=' .. aoi_scene.scene_id,
+				'line_id=' .. aoi_scene.line_id,
+				'pos=' .. math.floor(lplr.aoi_obj.x) .. ',' .. math.floor(lplr.aoi_obj.y),
+				'map_id=' .. Server.MAPSERVER_ID,
+				'space_id=' .. aoi_scene.space_id,
+				'aoi_id=' .. lplr.aoi_id,
+			}
+			local tips_txt = table.concat(info,'\n')
+			ChatService:sendString( lplr.gpid, tips_txt)
+			return
+		end
+
+
+		if cmd == 'world_level' then --查看世界等级:world_level
+			ChatService:sendString( lplr.gpid, '当前世界等级:'..ServerStatusDao.world_character_level)
+			return
+		end
+
+		if cmd == 'attrib' then --查看主要属性:attrib
+			local tips_txt = string.format('\n hp=%d/%d\n mp=%d/%d\n sp=%d/%d\n exp=%d/%d',lplr.now_hp,db.max_hp,db.mp,db.max_mp,db.sp,db.max_sp,db.exp,db.upgrade_exp)
+			ChatService:sendString( lplr.gpid, tips_txt)
+			return
+		end
+
+
+		if cmd == 'finish_guides' then--完成所有指引:finish_guides
+			local num = tonumber(cmds[2]) or 100
+			local guides = lplr.db.guides
+			for i=1,num do
+				guides[i] = 1
+			end
+			CharacterService:key2dirty(lplr,'guides')
+			CharacterService:sendCharacterUpdate(lplr,db,'guides')
+			return
+		end
+
+		if cmd == 'expire_horse' then-- 让坐骑过期:expire_horse 坐骑id
+			local horse_id = tonumber(cmds[2])
+			local horse_info = lplr.db.horse_info
+			local horse_list = horse_info.horse_list
+			horse_list[horse_id].expire_time = Time.time_second-1
+			HorseService:checkHorseExpire( lplr )
+			return
+		end
+
+		if cmd == "expire_try_horse" then--试用坐骑过期:expire_try_horse 后跟坐骑id
+			local horse_id = tonumber(cmds[2])
+			local horse_info = lplr.db.horse_info
+			local tried_list = horse_info.tried_list
+			tried_list[horse_id] = Time.time_second - 1
+			local data = {}
+			data.tried_list = tried_list
+			HorseService:newHorseRsp( lplr,data )
+			CharacterService:key2dirty(lplr,'horse_info')
+			HorseService:checkHorseTryExpire( lplr )
+			return
+		end
+
+
+		if cmd == 'pet_fetter' then--设置宠物羁绊等级:pet_fetter 宠物id 等级
+			local pet_id,level = tonumber(cmds[2]),tonumber(cmds[3])
+			if not ChPetService:isOwnPet(lplr,pet_id) then
+				WorldPacket:m2cSendErr(nil,nil,lplr.gpid,errorCodes.PETS_ERROR_PET_IS_NOT_OWN)
+				return
+			end
+
+			local db= lplr.db
+			local characterPet =ChPetService:getCharacterPet(lplr,db,pet_id)
+			local fetter_base = PetFetterBaseDao[pet_id]
+			local fetter_detail_base = PetFetterDetailBaseDao[fetter_base.detail_sort_id][level]
+
+			characterPet.fetter_level = level
+			characterPet.fetter_equips = FetterEquips:init()
+
+			local effects = fetter_detail_base.effects
+			if effects then
+				local fetter_effects = characterPet.fetter_effects
+				for k,v in pairs(effects) do
+					fetter_effects[k] = (fetter_effects[k] or 0) + v
+				end
+			end
+
+			local fetter_open_info = characterPet.fetter_open_info
+			if not fetter_open_info then
+				characterPet.fetter_open_info = {0,0,0}
+				fetter_open_info = characterPet.fetter_open_info
+			end
+			local IDX_KEYS = {'color_idx','weapon_idx','memoir_idx'}
+			for i=1,#IDX_KEYS do
+				local key = IDX_KEYS[i]
+				local val = fetter_detail_base[key]
+				if val and val > 0 then
+					fetter_open_info[i] = val
+				end
+			end
+			ChPetService:attribDirty(lplr, pet_id)
+			return
+		end
+
+		if cmd == 'pass_drift' then--通关漂流:pass_drift
+			if not DriftService then DriftService = _G.DriftService end
+			local aoi_scene = GameObjectService:getAoiScene(lplr)
+			local dead_aoi_type = AoiObjectType.AOI_OBJECT_TYPE_ID_PLAYER
+			DriftService:passDrift( aoi_scene,lplr, dead_aoi_type)
+			return
+		end
+
+		if cmd == 'mtj_kill' then-- 击杀图鉴怪物:mtj_kill 数量 怪物id1 怪物id2 怪物id3
+			local num = tonumber(cmds[2])
+			for i=3,#cmds do
+				local monster_id = tonumber(cmds[i])
+				local monster_base = MonsterBaseDao[monster_id]
+				for i=1,num do
+					MonsterBookService:onKillMonster(lplr,monster_base.tujian_id,monster_base.monster_sort_id)
+				end
+			end
+			return
+		end
+
+		if cmd == 'mtj_activate' then-- 激活图鉴:mtj_activate 图鉴id1 图鉴id2
+			for i=2,#cmds do
+				local tujian_id = tonumber(cmds[i])
+				MonsterBookService:activate(lplr,tujian_id)
+			end
+			return
+		end
+
+
+		if cmd == 'pass_subline' then--通关多人本:pass_subline
+			TeamSublineService:finish(aoi_scene)
+			return
+		end
+
+		if cmd == 'arena' then
+			local rank = tonumber(cmds[2])
+			local equips = {
+				[21010101] = 1
+			}
+			ChRewardService:add(lplr,RewardDefs.ARENA_RANK_REWARD,errorCodes.REWARDS_ERROR_REWARD_TIP,{rank},equips)
+			return
+		end
+
+
+		local tmps_ex = lplr.tmps_ex
+		if cmd == 'pet_hp' then --设置宠物血量:pet_hp 血量
+			local hp = tonumber(cmds[2]) or 1
+			local follow_pets = tmps_ex.follow_pets
+			if follow_pets then
+				for k, pet in pairs(follow_pets) do
+					pet.now_hp = hp
+					local update_data = {hp = pet.now_hp}
+					GameObjectService:sendAppearDataUpdate(aoi_scene, pet, update_data, true)
+					if hp <= 0 then
+						FightLogicCtrl:onKill(aoi_scene,lplr,pet)
+					end
+				end
+			end
+			return
+		end
+
+		if cmd =='pet_buffer' then --给宠物加buffer:pet_buffer bufferid
+			local buffer_id = tonumber(cmds[2])
+			local buffer_base = BufferBaseDao[buffer_id]
+			local follow_pets = tmps_ex.follow_pets
+			if follow_pets then
+				for k, pet in pairs(follow_pets) do
+					GameObjectBufferService:addBuffer(lplr,pet, buffer_base)
+				end
+			end
+			return
+		end
+
+		if cmd == 'passall' then --单人本通关:passall
+			local single_sublines = db.single_sublines
+			local passed_scenes = single_sublines.passed_scenes
+			for i=1,100 do
+				for k, chapter in pairs(single_sublines.chapters) do
+					for scene_id, info in pairs(chapter.subline_infos) do
+						info.can_enter = 1
+						info.stars = {1,1,1}
+						info.is_reward = 1
+						passed_scenes[scene_id] = 1
+					end
+					chapter.star = 15
+				end
+				SublineCtrl._check_can_enter(lplr, 10000, passed_scenes, single_sublines.chapters)
+			end
+			CharacterService:key2dirty(lplr, 'single_sublines')
+			return
+		end
+
+
+		--添加道具
+		if cmd == 'add' then--添加道具:add 道具id 道具数量
+			local equip_id,num = tonumber(cmds[2]),tonumber(cmds[3])
+			if equip_id then
+				if not EquipBaseDao[equip_id] then
+					WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'EQUIP NOT EXITS ' .. equip_id)
+					return
+				end
+				num = num or 1
+				local equip_base = EquipBaseDao[equip_id]
+				if not ChPackageService:addEquip(lplr,equip_id,num,1,1) then
+					WorldPacket:m2cSendOK(nil, nil, lplr.gpid,errorCodes.PACKAGE_ERROR_POS_NOT_ENOUGH)
+				end
+				return
+			end
+		end
+
+		if cmd == 'wing' then --翅膀目标:wing 类型 值
+			local key,value = cmds[2],tonumber(cmds[3])
+			if key =='fight' then
+				WingService:onFightCapacity(lplr,value)
+			elseif key == 'task' then
+				WingService:onTask(lplr,value)
+			end
+
+			return
+		end
+
+		if cmd == 'unlock_wing' then
+			local condition_ids_str = cmds[2]
+			local condition_ids = Utils.splitString(condition_ids_str,',',true)
+			for i=1,#condition_ids do
+				local condition_id = condition_ids[i]
+				local condition_base = ConditionBaseDao[condition_id]
+				local class_id = condition_base.class_id
+				if condition_base.sort_id == 19 then
+					class_id = Time:getSecondsNow()
+				end
+				WingService:checkCondition(lplr,condition_base.sort_id,condition_base.param1,condition_base.param2,class_id,condition_base.num)
+			end
+			return
+		end
+
+
+		if cmd == 'adds' then--添加大量道具:adds 数量 道具id1 道具id2 道具id3
+			local num = tonumber(cmds[2])
+			if num > 1000 then
+				WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'装备数量不能大于1000')
+				return
+			end
+			for i=3,#cmds do
+				local equip_id = tonumber(cmds[i])
+				if equip_id and equip_id > 0 then
+					if not EquipBaseDao[equip_id] then
+						WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'EQUIP NOT EXITS ' .. equip_id)
+						return
+					end
+					local equip_base = EquipBaseDao[equip_id]
+					if not ChPackageService:addEquip(lplr,equip_id,num,1,1) then
+						WorldPacket:m2cSendOK(nil, nil, lplr.gpid,errorCodes.PACKAGE_ERROR_POS_NOT_ENOUGH)
+						return
+					end
+				end
+			end
+			return
+		end
+
+
+		if cmd == 'reset_worldboss' then--重置世界BOSS次数:reset_worldboss
+			local total, left = ChCountService:get(lplr,9)
+			ChCountService:resume(lplr,9,total-left)
+
+			local left,total = PlayService:getLeftCnt(lplr,6)
+			PlayService:resume(lplr,6,total-left)
+			return
+		end
+
+
+		if cmd == 'reset' then--重置计数器:reset
+			local counter_type = cmds[2]
+			if type(db[counter_type]) == 'table' then
+				if counter_type == 'pets' then
+					ChPetService:hidePets(aoi_scene, lplr)
+				end
+				db[counter_type] = ''
+				CharacterService:key2dirty(lplr, counter_type)
+				ServerCall:m2bCall('CharacterService:m2b_forceKickPlayer',lplr.gcid)
+				WorldPacket:m2cSendErr({opcode=4}, nil, lplr.gpid)
+				return
+			end
+
+			counter_type = tonumber(counter_type)
+			if counter_type then
+				local total, left = ChCountService:get(lplr,counter_type)
+				ChCountService:resume(lplr,counter_type,total-left)
+			end
+			return
+		end
+
+
+		if cmd == 'reset_wanfa' then--重置玩法次数:reset_wanfa 玩法id
+			local wanfa_id  = tonumber(cmds[2])
+			if wanfa_id then
+				local left,total = PlayService:getLeftCnt(lplr,wanfa_id)
+				PlayService:resume(lplr,wanfa_id,total-left)
+			end
+			return
+		end
+
+		if cmd == 'open' then --打开所有功能:open
+			local func_id  = tonumber(cmds[2])
+			local open_funcs = db.open_funcs
+			if func_id and func_id > 0 then
+				if not open_funcs[func_id] then
+					WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'功能开关不存在'..func_id)
+					return
+				end
+				open_funcs[func_id] = 1
+			else
+				for i=1,#open_funcs do
+					open_funcs[i] = func_id or 1
+					TaskService:funcOpen(lplr,i)
+				end
+			end
+			CharacterService:key2dirty(lplr,'open_funcs')
+			CharacterService:sendCharacterUpdate(lplr,db,'open_funcs')
+			--通知base更新
+			ServerCall:m2bCall('CharacterCtrl:m2b_updateAttribs', lplr.gcid, {open_funcs= open_funcs})
+			return
+		end
+
+
+		if cmd == 'close' then--关闭功能:close 功能id
+			local func_id  = tonumber(cmds[2])
+			local open_funcs = db.open_funcs
+			if func_id and func_id > 0 then
+				if not open_funcs[func_id] then
+					WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'功能开关不存在'..func_id)
+					return
+				end
+				open_funcs[func_id] = 0
+			else
+				for i=1,#open_funcs do
+					open_funcs[i] = func_id or 1
+				end
+			end
+			CharacterService:key2dirty(lplr,'open_funcs')
+			CharacterService:sendCharacterUpdate(lplr,db,'open_funcs')
+			--通知base更新
+			ServerCall:m2bCall('CharacterCtrl:m2b_updateAttribs', lplr.gcid, {open_funcs= open_funcs})
+			return
+		end
+
+
+		if cmd == 'reset_subline' then --重置单人本次数:reset_subline
+			db.single_sublines.date = ''
+			CharacterService:key2dirty(lplr,'single_sublines')
+			return
+		end
+
+
+		if cmd =='pass' then --单人本通关:pass
+			local aoi_scene =  GameObjectService:getAoiScene(lplr)
+			if aoi_scene.is_local_ai  == 1 then
+				SublineService:onLocalKill(aoi_scene,lplr,AoiObjectType.AOI_OBJECT_TYPE_ID_MONSTER)
+			else
+				local monsters ,num = aoi_scene:getObjsByType(AoiObjectType.AOI_OBJECT_TYPE_ID_MONSTER)
+				--print('num',num)
+				for i=1,num do
+					local monster = monsters[i].game_obj
+					if monster.now_hp > 0 then
+						monster.now_hp = 0
+						FightLogicCtrl:onKill(aoi_scene,lplr,monster)
+					end
+				end
+			end
+			return
+		end
+
+
+		if cmd == 'add_talent_exp' then --增加才能经验:add_talent_exp 才能id 经验
+			local talent_id,talent_exp = tonumber(cmds[2]),tonumber(cmds[3])
+			TalentService:addTalentExp(lplr,talent_id,talent_exp,1)
+			return
+		end
+
+		if cmd =='buffer' then --buffer:添加一个buffer buffer_id
+			local buffer_id = tonumber(cmds[2])
+			local duration_ms= tonumber(cmds[3])
+
+			local buffer_base = BufferBaseDao[buffer_id]
+			local dst = lplr
+			local parent_aoi_obj = dst.aoi_obj.parent_aoi_obj
+			if parent_aoi_obj then
+				dst = parent_aoi_obj.game_obj
+			end
+			GameObjectBufferService:addBuffer(lplr,dst, buffer_base,duration_ms)
+			return
+		end
+
+		if cmd =='delbuffer' then--删除buffer:delbuffer buffer_id
+			local buffer_id = tonumber(cmds[2])
+			local end_buffer_ins = GameObjectBufferService:hasBuffer(lplr, buffer_id)
+			if end_buffer_ins then
+				GameObjectBufferService:endBufferIns(aoi_scene, lplr, end_buffer_ins)
+			end
+			return
+		end
+
+
+		if cmd == 'add_banggong' then --增加帮贡:add_banggong 数量
+			local num = tonumber(cmds[2])
+			GuildService:addContribution(lplr,num)
+			return
+		end
+
+
+		if cmd == 'reset_task' then--重置任务和指引：reset_task
+			lplr.db.tasks = Tasks:init()
+			lplr.db.guides = {}
+			CharacterService:key2dirty(lplr,{'tasks','guides'})
+
+			CharacterService:sendCharacterUpdate(lplr,db,'guides')
+
+			local tasks = TaskService:getTasks(lplr)
+			local ch_tasks = tasks.ch_tasks
+			TaskService:sendUpdateTasks(lplr,ch_tasks,nil,1)
+			return
+		end
+
+
+		if cmd == 'add_need_liveness ' then--增加日常任务活跃度：add_need_liveness 数量
+			local num = tonumber(cmds[2])
+			local tasks = TaskService:getTasks(lplr)
+			local daily_info = tasks.daily_info
+			local star_cur = (daily_info.star_cur or 0) + num
+			daily_info.star_cur = star_cur
+			local can_open_num = 0
+			for i=#DailyTaskBoxBaseDao,1,-1 do
+				if star_cur >= DailyTaskBoxBaseDao[i][1].need_liveness then
+					can_open_num = i
+					break
+				end
+			end
+
+			local daily_boxs = daily_info.boxs
+			for i=1,can_open_num do
+				if daily_boxs[i] == 0 then
+					daily_boxs[i] = 1
+				end
+			end
+			TaskService:sendTasks(lplr)
+			return
+		end
+
+
+		if cmd == 'pass_guard' then--通关守护结界：pass_guard
+			local guard_room = aoi_scene.guard_room
+			if not guard_room then
+				WorldPacket:m2cSendErr(nil,nil,lplr.gpid,"不是守护结界场景")
+			end
+			guard_room.phase = 15
+			guard_room.is_finish = 1
+			GuardService:update(aoi_scene)
+		end
+
+		--重置免费抽奖CD
+		if cmd == 'reset_lottery_cd' then
+			local avatar_lotterys = lplr.db.avatar_lotterys
+			avatar_lotterys.free_timestamp = 0
+			CharacterService:key2dirty(lplr,'avatar_lotterys')
+			ChAvatarLotteryService:sendLotteryInfo(lplr)
+			return
+		end
+
+		--重置免费抽奖CD
+		if cmd == 'set_lottery_cnt' then
+			local cnt = tonumber(cmds[2])
+			local avatar_lotterys = lplr.db.avatar_lotterys
+			avatar_lotterys.used_cnt = cnt
+			CharacterService:key2dirty(lplr,'avatar_lotterys')
+			ChAvatarLotteryService:sendLotteryInfo(lplr)
+			return
+		end
+
+
+		if cmd == 'add_task' then--增加任务:add_task 任务id
+			local task_id = tonumber(cmds[2])
+			local task_base = TaskBaseDao[task_id]
+			if not task_base then
+				WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'task_id not exists ' .. task_id)
+				return
+			end
+
+			local sort_id = task_base.sort_id
+			local ch_tasks = lplr.db.tasks.ch_tasks
+			if sort_id == TaskDefs.SORT_ID_MAIN then
+				for k, v in pairs(ch_tasks) do
+					if v[2] == sort_id then
+						ch_tasks[k] = nil
+					end
+				end
+			end
+			local ch_tasks = lplr.db.tasks.ch_tasks
+			ch_tasks[task_id] = nil
+			TaskService:addTask(lplr,task_id,nil,1)
+
+			TaskService:sendTasks(lplr)
+			return
+		end
+
+
+		if cmd == 'finish_task' then--完成任务：finish_task 任务id
+			local task_id = tonumber(cmds[2])
+			local tasks = lplr.db.tasks
+			local ch_tasks = tasks.ch_tasks
+			local update_tasks = {}
+			if task_id and task_id > 0 then
+				local task_base = TaskBaseDao[task_id]
+				if not task_base then
+					WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'task_id not exists ' .. task_id)
+					return
+				end
+				local ch_task = ch_tasks[task_id]
+				if not ch_task then
+					WorldPacket:m2cSendErr(nil, nil, lplr.gpid, errorCodes.COMMON_PARAM_ERROR)
+					return
+				end
+				ch_task[3] = TaskDefs.STATUS_CAN_DELIVER
+				update_tasks[task_id] = ch_task
+			else
+				for task_id,ch_task in pairs(ch_tasks) do
+					if ch_task[2] == TaskDefs.SORT_ID_MAIN then
+						ch_task[3] = TaskDefs.STATUS_CAN_DELIVER
+						update_tasks[task_id] = ch_task
+					end
+				end
+			end
+			CharacterService:key2dirty(lplr,'tasks')
+			TaskService:sendUpdateTasks(lplr,update_tasks)
+			return
+		end
+
+
+		if cmd == 'do_task' then--做任务：do_task 任务id
+			local task_id = tonumber(cmds[2])
+			local task_base = TaskBaseDao[task_id]
+			if not task_base then
+				WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'task_id not exists ' .. task_id)
+				return
+			end
+			local tasks = lplr.db.tasks
+			local ch_tasks = tasks.ch_tasks
+			local ch_task = ch_tasks[task_id]
+			if not ch_task then
+				WorldPacket:m2cSendErr(nil, nil, lplr.gpid, errorCodes.COMMON_PARAM_ERROR)
+				return
+			end
+			ch_task[3] = TaskDefs.STATUS_CAN_DELIVER
+			local packet = WorldPacket:newGcPacket()
+			packet:writeTable({task_id=task_id,career =1})
+			c_opHandlers[opCodes.C2M_TASKS_DELIVER_TASK](lplr, packet)
+		end
+
+		if cmd == 'kill_aoi' then--杀死对象：kill_aoi aoi_id
+			local aoi_id = tonumber(cmds[2])
+			if aoi_id and aoi_id > 0 then
+				local aoi_scene = GameObjectService:getAoiSceneAndObject(lplr)
+				local aoi_obj = aoi_scene:getObj(aoi_id)
+				if not aoi_obj then
+					WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'aoi id error,aoi_id =' .. aoi_id)
+					return
+				end
+				local game_obj = aoi_obj.game_obj
+				FightLogicCtrl:doharm(aoi_scene,lplr, game_obj, 9999999)
+				return
+			end
+		end
+
+		if cmd == 'petset' then--设置宠物属性：petset 宠物id 属性名 属性值
+			local pet_id, key, val = tonumber(cmds[2]),cmds[3],tonumber(cmds[4])
+			local pet = lplr.tmps_ex.follow_pets[pet_id]
+			if not pet then
+				return WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'该侠客没有出战 ' .. (pet_id or 0))
+			end
+			if not pet.fight_data[key] then
+				return WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'没有这个属性 ' .. key)
+			end
+			pet.fight_data[key] = val
+			pet.ch_pet[key] = val
+			local update_fields = {[key]=val}
+			ChPetService:sendUpdateChPet(lplr, lplr.gpid, pet_id, update_fields)
+			return
+		end
+
+		if cmd == 'setappear' then --设置外观:setappear 字段名 数值
+			local key,val = cmds[2],tonumber(cmds[3])
+			GameObjectService:sendAppearDataUpdate(aoi_scene,lplr,{[key]=val},true)
+			return
+		end
+
+		if cmd == 'add' or cmd == 'set' then --设置角色属性:add/set 属性名 属性值
+			local key,val,val2 = cmds[2],tonumber(cmds[3]),tonumber(cmds[4])
+			if key and val then
+				local aoi_scene = GameObjectService:getAoiScene(lplr)
+				if key == 'hp' then
+					if cmd == 'set' then lplr.now_hp = 0 end
+					lplr.now_hp = lplr.now_hp + val
+					GameObjectService:sendAppearDataUpdate(aoi_scene,lplr,{hp=lplr.now_hp},true)
+					return
+				end
+
+				local db = lplr.db
+				if not db[key] then
+					WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'ERROR KEY ' .. key)
+					return
+				end
+
+				local old_gold = CharacterService:getGold(lplr,db)
+				if key == 'gold' then key = 'game_gold' end
+				if key == 'deal_gold' then key = 'deal_region_gold' end
+
+				if cmd == 'set' then
+					db[key] = 0
+				end
+
+				CharacterService:incCharacterAttrib(lplr,db,key,val)
+
+				if rawget(lplr,key) then
+					lplr[key] = db[key]
+				end
+
+				local fight_data = lplr.fight_data
+				if rawget(fight_data,key) then
+					fight_data[key] = db[key]
+					local update_fields = {[key]=db[key]}
+					local gpid = aoi_scene:getPids()
+					SceneService:sendFightObjDataUpdate(gpid,aoi_scene.space_id,lplr.aoi_id,update_fields)
+				end
+
+				local old_speed = lplr.db.speed
+				if key == 'game_gold' or key == 'deal_region_gold' then
+					CharacterService:sendCharacterGoldUpdate(lplr,db)
+					local now_gold = CharacterService:getGold(lplr,db)
+					DbLogService:logConsumeGold(lplr,old_gold-now_gold,old_gold,ConsumeGoldDefs.SERVICE_ID_USE_VIRTUAL_EQUIP,'通过gm指令添加元宝',data)
+				elseif key == 'mp' or key == 'sp' then
+					local update_data = {[key]=db[key]}
+					GameObjectService:sendObjDataUpdate(aoi_scene,lplr,update_data,true)
+				else
+					CharacterService:sendCharacterUpdate(lplr,db,key)
+				end
+
+				if key == 'speed' then
+					lplr.speed = lplr.db.speed
+					MotionService:changeSpeed(lplr,1,Time.time_now + 3600*24*1000 )
+				end
+
+				ServerCall:m2bCall('CharacterCtrl:m2b_updateAttribs',lplr.gcid,{[key]=val})
+
+				if key == 'level' then
+					local update_data =
+					{
+						level = db.level,
+					}
+					GameObjectService:sendAppearDataUpdate(aoi_scene,lplr,update_data,true)
+				end
+
+				if key == 'level' or key == 'now_level' then
+					local max_reborn_level = ExpDefs:getMaxRebornLevel(db.level)
+					if db.now_level >= max_reborn_level then
+						db.can_upgrade = 0
+						CharacterService:sendCharacterUpdate(lplr,db,'can_upgrade')
+						CharacterService:key2dirty(lplr,'can_upgrade')
+					end
+				end
+			end
+			return
+		end
+
+
+		if cmd == 'cleanPackage' then--清空包裹:cleanPackage
+			local packages = lplr.db.packages
+			for i=1, #packages do
+				local package = packages[i]
+				local equip_id,num = package.equip_id or 0,package.stack_num or 0
+				if equip_id and equip_id > 0 and num and num > 0 then
+					ChPackageService:delEquip(lplr,equip_id,num,nil,1,i,1)
+				end
+			end
+			return
+		end
+
+
+		if cmd =='unlock' then--解锁玩法难度:unlock 玩法id 难度
+			local wanfa_id,difficulty = tonumber(cmds[2]),tonumber(cmds[3])
+			local play_info = PlayService:getPlayInfoByWanfaId(lplr,wanfa_id)
+
+			play_info.difficulty = difficulty
+			CharacterService:key2dirty(lplr,'play_infos')
+			PlayService:update(lplr,wanfa_id)
+			return
+		end
+
+
+		if cmd == 'clean_pack' then --清空通用包裹：clean_pack 背包类型
+			local base_sort_id = tonumber(cmds[2])
+			local packages = GeneralPackageService:getPackages(lplr,base_sort_id)
+			local poses = {}
+			for i=1,#packages do
+				local package = packages[i]
+				local equip_id = package.equip_id
+				if equip_id and equip_id > 0 then
+					GeneralPackageService:delEquip(lplr,base_sort_id,nil,equip_id,package.stack_num,i)
+					poses[#poses+1] = i
+				end
+			end
+
+			GeneralPackageService:package2dirty(lplr,base_sort_id)
+			GeneralPackageService:sendUpdate(lplr,base_sort_id, poses)
+			return
+		end
+
+
+		if cmd == 'clean_fuwen' then--清空符文：clean_fuwen
+			local packages = lplr.db.fuwen_packages
+			local poses = {}
+			for i=1, #packages do
+				local package = packages[i]
+				local equip_id = package.equip_id
+				if equip_id and equip_id > 0 then
+					poses[#poses+1] = i
+				end
+			end
+			ChPetFuWenService:delEquip(lplr, poses)
+			return
+		end
+
+
+		if cmd == 'put_pet' then--守护玩法放置宠物:put_pet 宠物id 位置
+			local pet_id = tonumber(cmds[2])
+			local pet_pos= tonumber(cmds[3])
+
+			if not ChPetService:isOwnPet(lplr,pet_id) then
+				WorldPacket:m2cSendErr(nil,nil,lplr.gpid,errorCodes.PETS_ERROR_PET_IS_NOT_OWN)
+				return
+			end
+			GuardService:putPet(aoi_scene,lplr,1,pet_pos,pet_id)
+			return
+		end
+
+
+		if cmd == 'add_wing' then--新增翅膀：add_wing 翅膀id
+			local wing_id = tonumber(cmds[2])
+			local wing_base = WingBaseDao[wing_id]
+			if not wing_base then
+				WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'翅膀不存在')
+				return
+			end
+			local ch_wings = lplr.db.wings.ch_wings
+			local ch_wing = ch_wings[wing_id]
+			if ch_wing.is_activate == 1 then
+				WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'翅膀已获得')
+				return
+			end
+
+			local locks_status = ch_wing.locks_status
+			for i=1,#locks_status do
+				local status = locks_status[i]
+				if status.locked == 1 then
+					status.locked = 0
+					status.curr_progress = status.total_progress
+				end
+			end
+			ch_wing.is_activate = 1
+
+			local wing_base = WingBaseDao[wing_id]
+			if wing_base.valid_day and wing_base.valid_day > 0 then
+				ch_wing.expire = Time.time_second + wing_base.valid_day * 24 * 60 * 60
+			end
+
+			CharacterService:key2dirty(lplr,'wings')
+			local updates = {}
+			updates[wing_id] = ch_wing
+			WingService:update(lplr, updates)
+			CharacterService:calCharacterAttrib(lplr,'WingService')
+			ActionService:onGetWing( lplr,wing_id )
+			WorldPacket:m2cSendErr(nil,nil,lplr.gpid,'翅膀添加成功')
+			return
+		end
+
+		if cmd == 'reward' then
+			local equip_id,num = tonumber(cmds[2]),tonumber(cmds[3])
+			local equips = {}
+			equips[equip_id] = num or 1
+			ChRewardService:add(lplr,RewardDefs.REBORN_REWARD,errorCodes.REWARDS_ERROR_REWARD_TIP,{db.nick},equips)
+			return
+		end
+
+		if cmd == 'reward2' then
+			local pos = tonumber(cmds[2])
+			local db = lplr.db
+			local packages = db.packages
+			local package_item = packages[pos]
+
+			local ch_equip_id = package_item.ch_equip_id
+			local ch_equip = ChEquipService:getEquip(lplr,ch_equip_id)
+			local c_ch_equip = Utils.lightCopyTable(ch_equip)
+
+			ChPackageService:delChEquip(lplr,pos,1)
+
+			ChRewardService:addByChEquips(lplr,RewardDefs.REBORN_REWARD,errorCodes.REWARDS_ERROR_REWARD_TIP,{db.nick},{{c_ch_equip,1}})
+			return
+		end
+
+		if cmd == 'age' then--设置年龄：age 年龄
+			local age = tonumber(cmds[2])
+			if age > 17 and age < 10 then
+				return WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'年龄错误')
+			end
+			local new_born_stamp= RebornDefs:get_born_stamp(age)
+			db.age = age
+			db.born_stamp = new_born_stamp
+			CharacterService:key2dirty(lplr,'born_stamp')
+
+			CharacterService:sendCharacterUpdate(lplr, db,'age')
+			local aoi_scene = GameObjectService:getAoiSceneAndObject(lplr)
+			GameObjectService:appearDirty(lplr)
+			GameObjectService:send_appears_data(aoi_scene, GameObjectService:getFovPids(lplr, true), {lplr})
+
+			return
+		end
+
+
+		if cmd == 'add_pet' then--新增宠物：add_pet 宠物id1 宠物id2 宠物id3
+			for i=2,#cmds do
+				local pet_id = tonumber(cmds[i])
+				local pet_base = PetBaseDao[pet_id]
+				if not pet_base then
+					WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'侠客ID错误:'..pet_id)
+					return
+				end
+
+				if pet_base.master_type_id ~= 1 then
+					WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'不是主角侠客， id='..pet_id)
+					return
+				end
+
+				if ChPetService:isOwnPet(lplr,pet_id) then
+					if not ChPackageService:addEquip(lplr,pet_base.suipian_id,pet_base.suipian_num,1,1) then
+						WorldPacket:m2cSendOK(nil, nil, lplr.gpid,errorCodes.PACKAGE_ERROR_POS_NOT_ENOUGH)
+					end
+				else
+					--加侠客
+					ChPetService:addPet(lplr,pet_id)
+
+					ChPetCtrl:sendPet(lplr,pet_id)
+
+					-- 回包
+					local ret_opcode = opCodes.M2C_PETS_PET_COMPOSE
+					local ret_data =
+					{
+						opcode = ret_opcode,
+						pbmsg = WorldPacket:getMsgByName("M2C_PETS_PET_COMPOSE"),
+					}
+					ret_data.sort_id = 0
+					ret_data.pet_id = pet_id
+					ret_data.opcode = ret_opcode
+					WorldPacket:m2cSendOK(ret_data, nil, lplr.gpid)
+				end
+			end
+			return
+		end
+
+		if cmd == 'cut' then
+			local pos,num = tonumber(cmds[2]),tonumber(cmds[3])
+			local db = lplr.db
+			local items = db.items
+			local item = items[pos]
+			local ch_equip_id = item.ch_equip_id
+			if ch_equip_id and ch_equip_id > 0 then
+				local ch_equip = ChEquipService:getEquip(lplr,ch_equip_id)
+				local old_is_low = ChEquipRepairService:isLowDurability(lplr)
+				ch_equip.durability = ch_equip.durability - num
+				if ch_equip.durability < 0 then
+					ch_equip.durability = 0
+				end
+				CharacterService:key2dirty(lplr,'ch_equips')
+				ChEquipCtrl.sendDetail(lplr, ch_equip)
+				ChEquipItemService:dress(item, ch_equip)
+				ChEquipItemService:sendUpdate(lplr, item)
+				local new_is_low = ChEquipRepairService:isLowDurability(lplr)
+				if new_is_low ~= old_is_low then
+					ChEquipRepairService:statusUpdate(lplr,new_is_low)
+				end
+			else
+				WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'该位置没有穿戴装备' )
+			end
+			return
+		end
+
+
+		if cmd == 'goto' then --切换场景：goto 场景id
+			local scene_id,line_id = tonumber(cmds[2]),tonumber(cmds[3])
+			local aoi_scene = GameObjectService:getAoiScene(lplr)
+			local params =
+			{
+				scene_id = scene_id,
+				line_id = line_id,
+			}
+			SceneCtrl:moveToScene(lplr, aoi_scene, params)
+			return
+		end
+
+		-- 自用GM测试
+		if cmd == 'xcmtest' then
+			-- -- local params = {}
+			-- -- for i=2,5 do
+			-- -- 	params[#params + 1] = cmds[i]
+			-- -- end
+			-- --------------------
+			-- for k,v in pairs(MonsterBookBaseDao) do
+			-- 	print(k,v)
+			-- end
+			local type = tonumber(cmds[2])
+			local x = tonumber(cmds[3])
+			local y = tonumber(cmds[4])
+			if type == 1 then
+				local npc_arr = DuoMaoMaoDao.npc_arr
+				for line_id,index2obj in pairs(npc_arr) do
+					for index,game_objs in pairs(index2obj) do
+						for i,game_obj in ipairs(game_objs) do
+							local aoi_scene,aoi_obj = GameObjectService:getAoiSceneAndObject(game_obj)
+							print('line_id',line_id,'index',index,'aoi_id:',aoi_obj.aoi_id,'scene_id:',aoi_scene.scene_base.id,'space id:',aoi_scene.space_id)
+						end
+					end
+				end
+			end
+			if type == 2 then
+				MotionService:setPos(lplr, x, y, true, true)
+			end
+			if type == 3 then
+				print_r(lplr.db.ch_dmm_info)
+			end
+			-- local lang_tips = LangTipsDefs:createLangTipsLangId( errorCodes['RED_PACKET_ERROR_CHAT'..random_idx] )
+			-- local msg = {not_filter=1, recv_unique_key=guild_red.unique_key or 0, recv_nick = guild_red.nick, bubble_id=1001, recv_gcid = guild_red.gcid}
+			-- msg.lang_tips = WorldPacket:encodeData(lang_tips)
+			-- packet:writeTable({msg = msg} )
+			-- c_opHandlers[opCodes.C2B_CHAT_SECRET](lplr, packet)
+			if type == 4 then
+
+			end
+			return
+		end
+
+		if cmd == 'dmm_rc' then
+			local clue1,clue2,clue3 = tonumber(cmds[2]),tonumber(cmds[3]),tonumber(cmds[4])
+			local data = {}
+			for i=1,3 do
+				data[i] = tonumber(cmds[i+1])
+			end
+			DuoMaoMaoService:gmReceive( lplr,data )
+			return
+		end
+
+		if cmd == 'dmm_npc' then
+			local flag = cmds[2]
+			local x,y = tonumber(cmds[3]),tonumber(cmds[4])
+			if not x then
+				x = lplr.aoi_obj.x
+				y = lplr.aoi_obj.y
+			end
+			DuoMaoMaoCtrl:gmGen( lplr,flag,x,y )
+			return
+		end
+
+		if cmd == 'dmm_receive' then
+			local index1,index2,index3 = tonumber(cmds[2]),tonumber(cmds[3]),tonumber(cmds[4])
+			local duomaomao_info = DuoMaoMaoDao.duomaomao_info
+			local ch_dmm_info = DuoMaoMaoDao:new_dmm_info()
+
+			local npc_selected = {}
+			npc_selected[#npc_selected+1] = index1
+			npc_selected[#npc_selected+1] = index2
+			npc_selected[#npc_selected+1] = index3
+
+			local npc_find = {0,0,0}
+
+			ch_dmm_info.npc_selected = npc_selected
+			ch_dmm_info.start_time = Time.time_second
+			ch_dmm_info.npc_find = npc_find
+			ch_dmm_info.id = duomaomao_info.id
+
+			DuoMaoMaoService:register(lplr)
+			DuoMaoMaoService:unifiedRsp({gpid=lplr.gpid,ch_dmm_info=ch_dmm_info,receive=1})
+			lplr.db.ch_dmm_info = ch_dmm_info
+			CharacterService:key2dirty(lplr,'ch_dmm_info')
+
+			return
+		end
+
+		if cmd == 'dmm_finish' then
+			local ch_dmm_info = lplr.db.ch_dmm_info
+			local npc_selected = ch_dmm_info.npc_selected
+			local npc_find = ch_dmm_info.npc_find
+			local index = {}
+			index[1],index[2],index[3] = tonumber(cmds[2]),tonumber(cmds[3]),tonumber(cmds[4])
+
+			for i,v in ipairs(index) do
+				npc_find[v] = 1
+				local npc_index = npc_selected[v]
+				CharacterService:key2dirty(lplr,'ch_dmm_info')
+				DuoMaoMaoService:unifiedRsp({gpid=lplr.gpid,ch_dmm_info=ch_dmm_info,find=1,error_code=errorCodes.DUOMAOMAO_ERROR_FOUND})
+				ServerCall:m2bCall('DuoMaoMaoService:m2b_updateNpcFindNum', nil, {npc_index=npc_index})
+
+				local find_all = true
+				for i,v in ipairs(npc_find) do
+					if v == 0 then find_all = false break end
+				end
+
+				local act_id = 104
+
+				if find_all then
+					local add_score = DuoMaoMaoService:genScore( lplr )
+					local ch_dmm_info = DuoMaoMaoDao:new_dmm_info()
+					lplr.db.ch_dmm_info = ch_dmm_info
+					CharacterService:key2dirty(lplr,'ch_dmm_info')
+					DuoMaoMaoService:unifiedRsp({gpid=lplr.gpid,ch_dmm_info=ch_dmm_info})
+					TaskService:onDuoMaoMao(lplr)
+					WeekActivityService:addScore(lplr, act_id, 1)
+					WeekActivityService:finish(lplr, act_id, add_score)
+					DuoMaoMaoService:unregister(lplr)
+					break
+				else
+					WeekActivityService:addScore(lplr, act_id, 1)
+				end
+			end
+
+			return
+		end
+
+		if cmd == 'addskill' then --添加技能：addskill 技能id 技能等级
+			local skill_id, skill_level = tonumber(cmds[2]),tonumber(cmds[3])
+
+			local skill_base = SkillBaseDao[skill_id]
+			if skill_base.owner_type ~= 1 then
+				WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'不是角色技能' )
+				return
+			end
+
+			local ch_skill = ChSkillService:addSkill(lplr,skill_id)
+
+			if skill_level and skill_level > 0 then
+				ch_skill[3] = skill_level
+			end
+			for i=1,#ch_skill[4] do
+				ch_skill[4][i] = ch_skill[4][i] + 1
+			end
+			ch_skill[6] = 100
+			ChSkillService:sendSkillsUpdate(lplr, {ch_skill})
+			return
+		end
+
+		if cmd == 'addallskill' then --添加全部技能：addallskill
+			local ch_skills = {}
+			for skill_id, skill_base in pairs(SkillBaseDao) do
+				if skill_base.owner_type == 1 then
+					local ch_skill = ChSkillService:addSkill(lplr,skill_id)
+					ch_skill[6] = 100
+					ch_skills[#ch_skills+1] = ch_skill
+				end
+			end
+			ChSkillService:sendSkillsUpdate(lplr, ch_skills)
+			return
+		end
+
+		WorldPacket:m2cSendOK(nil, nil, lplr.gpid,'ERROR GM COMMAND ' .. cmd)
+	end
+end
+
+

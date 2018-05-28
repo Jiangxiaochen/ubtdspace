@@ -25,6 +25,7 @@
 #include <numeric>
 #include <iterator>
 #include <functional>
+#include <memory>
 //调试
 #include <cassert>
 using namespace std;

@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
+#include <execinfo.h>
 
 void show_bytes(void *start, unsigned len);
 
@@ -27,4 +28,14 @@ void show_line();
 int show_endian();
 
 void show_bits(void *start, unsigned len);
+
+inline void mytrace()
+{
+	void *buffer[20];
+	int num = backtrace(buffer,20);
+	char **name = backtrace_symbols(buffer,num);
+	for(int i = 0; i < num; i++) printf("%s\n",name[i]);
+	free(name);
+}
+
 #endif
