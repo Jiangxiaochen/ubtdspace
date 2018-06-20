@@ -29,5 +29,6 @@ int main()
 			}) << endl;
 	
 	cout << compare("abc","aa") << endl;
-	cout << compare(A(),A()) << endl;
+//	cout << compare(A(),A()) << endl;
+	cout << compare<double>(1,1.2) << endl;
 }

@@ -1,5 +1,24 @@
 #include "jxcutils.h"
+#include <sys/time.h>
 
+/**
+ * Returns the current time in microseconds.
+ */
+uint64_t getMicrotime(){
+	struct timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	return currentTime.tv_sec * 1000000 + currentTime.tv_usec;
+}
+
+uint64_t getNanoTime()
+{
+	struct timespec ts;
+	int result = clock_gettime(CLOCK_REALTIME_COARSE,&ts);
+	if(result == 0){
+		return ts.tv_sec * 1000000 + ts.tv_nsec;
+	}
+	return 0;
+}
 
 void show_bytes(void *start, unsigned len)
 {

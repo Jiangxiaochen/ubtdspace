@@ -17,6 +17,11 @@
 #include <errno.h>
 #include <limits.h>
 #include <execinfo.h>
+#include <sys/time.h>
+#include <stdint.h>
+
+uint64_t getMicrotime();
+uint64_t getNanoTime();
 
 void show_bytes(void *start, unsigned len);
 

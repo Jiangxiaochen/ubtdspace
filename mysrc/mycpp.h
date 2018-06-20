@@ -28,6 +28,7 @@
 #include <memory>
 //调试
 #include <cassert>
+#include <bitset>
 using namespace std;
 
 #define VIEW_SEQ(sq) \
